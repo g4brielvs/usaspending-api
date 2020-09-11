@@ -193,7 +193,8 @@ class Command(BaseCommand):
             tasks.append(
                 asyncio.ensure_future(
                     async_run_creates(
-                        INSERT_CHUNK_SQL.format(total_chunks, current_chunk), wrapper=Timer(current_chunk)
+                        INSERT_CHUNK_SQL.format(total_chunks, current_chunk),
+                        wrapper=Timer("Group {}".format(current_chunk)),
                     ),
                     loop=loop,
                 )
