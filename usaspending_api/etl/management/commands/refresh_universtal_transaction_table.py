@@ -140,7 +140,9 @@ INSERT
     ;
 """
 
-TRUCATE_TABLE_SQL = """
+TRUNCATE_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS universal_transaction_test_table AS TABLE universal_transaction_matview WITH NO DATA; 
+
 DROP INDEX IF EXISTS idx_15d6e514$75d_transaction_id_temp;
 DROP INDEX IF EXISTS idx_15d6e514$75d_action_date_temp;
 DROP INDEX IF EXISTS idx_15d6e514$75d_last_modified_date_temp;
@@ -206,7 +208,7 @@ class Command(BaseCommand):
 
     def truncate_and_remove_indexes(self):
         with connection.cursor() as cursor:
-            cursor.execute(TRUCATE_TABLE_SQL)
+            cursor.execute(TRUNCATE_TABLE_SQL)
 
     def create_indexes(self):
         with connection.cursor() as cursor:
