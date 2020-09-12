@@ -180,7 +180,6 @@ class Command(BaseCommand):
     help = "" ""
 
     def handle(self, *args, **options):
-
         total_chunks = 10
 
         self.truncate_and_remove_indexes()
@@ -204,7 +203,8 @@ class Command(BaseCommand):
         loop.close()
         logger.info("Finished inserting data")
 
-        self.create_indexes()
+        with Timer("Creating Indexes"):
+            self.create_indexes()
         logger.info("Created indexes")
 
     def truncate_and_remove_indexes(self):
