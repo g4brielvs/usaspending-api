@@ -180,7 +180,7 @@ class Command(BaseCommand):
     help = "" ""
 
     def handle(self, *args, **options):
-        total_chunks = 100
+        total_chunks = 200
 
         self.truncate_and_remove_indexes()
         logger.info("Truncated table and removed indexes")
