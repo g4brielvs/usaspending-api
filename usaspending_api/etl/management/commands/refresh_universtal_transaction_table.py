@@ -186,7 +186,6 @@ class Command(BaseCommand):
         total_chunks = options["thread_count"]
 
         logger.info("Thread Count: {}".format(total_chunks))
-        exit()
 
         self.truncate_and_remove_indexes()
         logger.info("Truncated table and removed indexes")
