@@ -179,8 +179,14 @@ class Command(BaseCommand):
 
     help = "" ""
 
+    def add_arguments(self, parser):
+        parser.add_argument("--thread-count", default=10, help="Broker submission_id to load", type=int)
+
     def handle(self, *args, **options):
-        total_chunks = 200
+        total_chunks = options["thread_count"]
+
+        logger.info("Thread Count: {}".format(total_chunks))
+        exit()
 
         self.truncate_and_remove_indexes()
         logger.info("Truncated table and removed indexes")
