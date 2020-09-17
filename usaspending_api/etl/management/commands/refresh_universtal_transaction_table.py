@@ -187,7 +187,8 @@ class Command(BaseCommand):
 
         logger.info("Thread Count: {}".format(total_chunks))
 
-        self.truncate_and_remove_indexes()
+        with Timer("Truncating table and removing indexes"):
+            self.truncate_and_remove_indexes()
         logger.info("Truncated table and removed indexes")
 
         loop = asyncio.new_event_loop()
