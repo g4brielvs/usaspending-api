@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import sqlparse
 
 from django.db import connection
 from django.core.management.base import BaseCommand
@@ -218,5 +219,20 @@ class Command(BaseCommand):
             cursor.execute(TRUNCATE_TABLE_SQL)
 
     def create_indexes(self):
-        with connection.cursor() as cursor:
-            cursor.execute(CREATE_INDEXES_SQL)
+        loop = asyncio.new_event_loop()
+        tasks = []
+        i = 0
+        for sql in sqlparse.split(CREATE_INDEXES_SQL):
+            tasks.append(
+                asyncio.ensure_future(
+                    async_run_creates(
+                        sql,
+                        wrapper=Timer("Index {}".format(i)),
+                    ),
+                    loop=loop,
+                )
+            )
+            i += 1
+
+        loop.run_until_complete(asyncio.gather(*tasks))
+        loop.close()
