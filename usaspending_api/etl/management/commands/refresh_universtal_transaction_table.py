@@ -141,7 +141,7 @@ INSERT
     ;
 """
 
-TRUNCATE_TABLE_SQL = """
+REMOVE_INDEX_SQL = """
 CREATE TABLE IF NOT EXISTS universal_transaction_test_table AS TABLE universal_transaction_matview WITH NO DATA; 
 
 DROP INDEX IF EXISTS idx_15d6e514$75d_transaction_id_temp;
@@ -156,7 +156,9 @@ DROP INDEX IF EXISTS idx_15d6e514$75d_parent_recipient_unique_id_temp;
 DROP INDEX IF EXISTS idx_15d6e514$75d_simple_pop_geolocation_temp;
 DROP INDEX IF EXISTS idx_15d6e514$75d_recipient_hash_temp;
 DROP INDEX IF EXISTS idx_15d6e514$75d_action_date_pre2008_temp;
+"""
 
+TRUNCATE_TABLE_SQL = """
 TRUNCATE TABLE universal_transaction_test_table;
 """
 
@@ -182,24 +184,44 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--thread-count", default=10, help="Broker submission_id to load", type=int)
+        parser.add_argument("--skip-data", action="store_true", help="Skip table truncate/population")
 
     def handle(self, *args, **options):
-        total_chunks = options["thread_count"]
+        thread_count = options["thread_count"]
+        skip_data = options["skip_data"]
 
-        logger.info("Thread Count: {}".format(total_chunks))
+        logger.info("Thread Count: {}".format(thread_count))
 
-        with Timer("Truncating table and removing indexes"):
-            self.truncate_and_remove_indexes()
-        logger.info("Truncated table and removed indexes")
+        with Timer("Removing indexes"):
+            self.remove_indexes()
 
+        if not skip_data:
+            with Timer("Truncating table"):
+                self.truncate_table()
+
+            with Timer("Inserting data"):
+                self.populate_table(thread_count)
+
+        with Timer("Creating Indexes"):
+            self.create_indexes()
+
+    def remove_indexes(self):
+        with connection.cursor() as cursor:
+            cursor.execute(REMOVE_INDEX_SQL)
+
+    def truncate_table(self):
+        with connection.cursor() as cursor:
+            cursor.execute(TRUNCATE_TABLE_SQL)
+
+    def populate_table(self, thread_count):
         loop = asyncio.new_event_loop()
         tasks = []
-        for current_chunk in range(0, total_chunks):
+        for current_chunk in range(0, thread_count):
             logger.info("Creating Future for group {}".format(current_chunk))
             tasks.append(
                 asyncio.ensure_future(
                     async_run_creates(
-                        INSERT_CHUNK_SQL.format(total_chunks, current_chunk),
+                        INSERT_CHUNK_SQL.format(thread_count, current_chunk),
                         wrapper=Timer("Group {}".format(current_chunk)),
                     ),
                     loop=loop,
@@ -208,15 +230,6 @@ class Command(BaseCommand):
 
         loop.run_until_complete(asyncio.gather(*tasks))
         loop.close()
-        logger.info("Finished inserting data")
-
-        with Timer("Creating Indexes"):
-            self.create_indexes()
-        logger.info("Created indexes")
-
-    def truncate_and_remove_indexes(self):
-        with connection.cursor() as cursor:
-            cursor.execute(TRUNCATE_TABLE_SQL)
 
     def create_indexes(self):
         loop = asyncio.new_event_loop()
