@@ -175,20 +175,22 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--thread-count", default=10, help="Broker submission_id to load", type=int)
-        parser.add_argument("--refresh", action="store_true", help="Refreshes Matview intead of recreating it")
+        parser.add_argument("--refresh", action="store_true", help="Refreshes Matview")
+        parser.add_argument("--recreate", action="store_true", help="Recreates Matview")
         parser.add_argument("--update-table", action="store_true", help="Truncates the aggregate table and inserts data from all matviews")
 
     def handle(self, *args, **options):
         thread_count = options["thread_count"]
         refresh = options["refresh"]
+        recreate = options["recreate"]
         update_table = options["update_table"]
 
         logger.info("Thread Count: {}".format(thread_count))
 
-        if not refresh:
+        if recreate:
             with Timer("Creating Matviews"):
                 self.create_matviews(thread_count)
-        else:
+        if refresh:
             with Timer("Refreshing Matviews"):
                 self.refresh_matviews(thread_count)
 
