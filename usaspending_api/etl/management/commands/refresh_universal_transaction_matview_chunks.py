@@ -138,22 +138,34 @@ CREATE MATERIALIZED VIEW universal_transaction_test_matview_{current_chunk} AS
             transaction_normalized.action_date >= '2000-10-01'
             AND transaction_normalized.id % {thread_count} = {current_chunk}
     ;
-CREATE UNIQUE INDEX idx_15d6e514$75d_transaction_id_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(transaction_id ASC NULLS LAST) WITH (fillfactor = 97);
-CREATE INDEX idx_15d6e514$75d_action_date_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(action_date DESC NULLS LAST) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_last_modified_date_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(last_modified_date DESC NULLS LAST) WITH (fillfactor = 97);
-CREATE INDEX idx_15d6e514$75d_fiscal_year_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(fiscal_year DESC NULLS LAST) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_type_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(type) WITH (fillfactor = 97) WHERE type IS NOT NULL AND action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_award_id_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(award_id) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_pop_zip5_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(pop_zip5) WITH (fillfactor = 97) WHERE pop_zip5 IS NOT NULL AND action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_recipient_unique_id_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(recipient_unique_id) WITH (fillfactor = 97) WHERE recipient_unique_id IS NOT NULL AND action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_parent_recipient_unique_id_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(parent_recipient_unique_id) WITH (fillfactor = 97) WHERE parent_recipient_unique_id IS NOT NULL AND action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_simple_pop_geolocation_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(pop_state_code, action_date) WITH (fillfactor = 97) WHERE pop_country_code = 'USA' AND pop_state_code IS NOT NULL AND action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_recipient_hash_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(recipient_hash) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_action_date_pre2008_temp_{current_chunk} ON universal_transaction_test_matview_{current_chunk} USING BTREE(action_date) WITH (fillfactor = 97) WHERE action_date < '2007-10-01';
 """
 
 REFRESH_MATVIEW_SQL = """
 REFRESH MATERIALIZED VIEW CONCURRENTLY universal_transaction_test_matview_{current_chunk};
+"""
+
+RECREATE_TABLE_SQL = """
+DROP TABLE IF EXISTS universal_transaction_test_table;
+CREATE TABLE universal_transaction_test_table AS TABLE universal_transaction_matview WITH NO DATA;
+"""
+
+INSERT_INTO_TABLE_SQL = """
+INSERT INTO universal_transaction_test_table SELECT * FROM universal_transaction_test_matview_{current_chunk}
+"""
+
+TABLE_INDEX_SQL = """
+CREATE UNIQUE INDEX idx_15d6e514$75d_transaction_id_test_table ON universal_transaction_test_table USING BTREE(transaction_id ASC NULLS LAST) WITH (fillfactor = 97);
+CREATE INDEX idx_15d6e514$75d_action_date_test_table ON universal_transaction_test_table USING BTREE(action_date DESC NULLS LAST) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
+CREATE INDEX idx_15d6e514$75d_last_modified_date_test_table ON universal_transaction_test_table USING BTREE(last_modified_date DESC NULLS LAST) WITH (fillfactor = 97);
+CREATE INDEX idx_15d6e514$75d_fiscal_year_test_table ON universal_transaction_test_table USING BTREE(fiscal_year DESC NULLS LAST) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
+CREATE INDEX idx_15d6e514$75d_type_test_table ON universal_transaction_test_table USING BTREE(type) WITH (fillfactor = 97) WHERE type IS NOT NULL AND action_date >= '2007-10-01';
+CREATE INDEX idx_15d6e514$75d_award_id_test_table ON universal_transaction_test_table USING BTREE(award_id) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
+CREATE INDEX idx_15d6e514$75d_pop_zip5_test_table ON universal_transaction_test_table USING BTREE(pop_zip5) WITH (fillfactor = 97) WHERE pop_zip5 IS NOT NULL AND action_date >= '2007-10-01';
+CREATE INDEX idx_15d6e514$75d_recipient_unique_id_test_table ON universal_transaction_test_table USING BTREE(recipient_unique_id) WITH (fillfactor = 97) WHERE recipient_unique_id IS NOT NULL AND action_date >= '2007-10-01';
+CREATE INDEX idx_15d6e514$75d_parent_recipient_unique_id_test_table ON universal_transaction_test_table USING BTREE(parent_recipient_unique_id) WITH (fillfactor = 97) WHERE parent_recipient_unique_id IS NOT NULL AND action_date >= '2007-10-01';
+CREATE INDEX idx_15d6e514$75d_simple_pop_geolocation_test_table ON universal_transaction_test_table USING BTREE(pop_state_code, action_date) WITH (fillfactor = 97) WHERE pop_country_code = 'USA' AND pop_state_code IS NOT NULL AND action_date >= '2007-10-01';
+CREATE INDEX idx_15d6e514$75d_recipient_hash_test_table ON universal_transaction_test_table USING BTREE(recipient_hash) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
+CREATE INDEX idx_15d6e514$75d_action_date_pre2008_test_table ON universal_transaction_test_table USING BTREE(action_date) WITH (fillfactor = 97) WHERE action_date < '2007-10-01';
 """
 
 
@@ -164,10 +176,12 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--thread-count", default=10, help="Broker submission_id to load", type=int)
         parser.add_argument("--refresh", action="store_true", help="Refreshes Matview intead of recreating it")
+        parser.add_argument("--update-table", action="store_true", help="Truncates the aggregate table and inserts data from all matviews")
 
     def handle(self, *args, **options):
         thread_count = options["thread_count"]
         refresh = options["refresh"]
+        update_table = options["update_table"]
 
         logger.info("Thread Count: {}".format(thread_count))
 
@@ -177,6 +191,14 @@ class Command(BaseCommand):
         else:
             with Timer("Refreshing Matviews"):
                 self.refresh_matviews(thread_count)
+
+        if update_table:
+            with Timer("Recreating table"):
+                self.recreate_table()
+            with Timer("Inserting data into table"):
+                self.insert_table_data(thread_count)
+            with Timer("Creating table indexes"):
+                self.create_indexes()
 
     def create_matviews(self, thread_count):
         loop = asyncio.new_event_loop()
@@ -208,6 +230,46 @@ class Command(BaseCommand):
                     loop=loop,
                 )
             )
+
+        loop.run_until_complete(asyncio.gather(*tasks))
+        loop.close()
+
+    def recreate_table(self):
+        with connection.cursor() as cursor:
+            cursor.execute(RECREATE_TABLE_SQL)
+
+    def insert_table_data(self, thread_count):
+        loop = asyncio.new_event_loop()
+        tasks = []
+        for current_chunk in range(0, thread_count):
+            tasks.append(
+                asyncio.ensure_future(
+                    async_run_creates(
+                        INSERT_INTO_TABLE_SQL.format(current_chunk=current_chunk),
+                        wrapper=Timer("Insert into table {}".format(current_chunk)),
+                    ),
+                    loop=loop,
+                )
+            )
+
+        loop.run_until_complete(asyncio.gather(*tasks))
+        loop.close()
+
+    def create_indexes(self):
+        loop = asyncio.new_event_loop()
+        tasks = []
+        i = 0
+        for sql in sqlparse.split(TABLE_INDEX_SQL):
+            tasks.append(
+                asyncio.ensure_future(
+                    async_run_creates(
+                        sql,
+                        wrapper=Timer("Creating Index {}".format(i)),
+                    ),
+                    loop=loop,
+                )
+            )
+            i += 1
 
         loop.run_until_complete(asyncio.gather(*tasks))
         loop.close()
