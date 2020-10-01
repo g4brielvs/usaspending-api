@@ -141,7 +141,7 @@ CREATE MATERIALIZED VIEW universal_transaction_test_matview_{current_chunk} AS
 """
 
 REFRESH_MATVIEW_SQL = """
-REFRESH MATERIALIZED VIEW CONCURRENTLY universal_transaction_test_matview_{current_chunk};
+REFRESH MATERIALIZED VIEW universal_transaction_test_matview_{current_chunk};
 """
 
 RECREATE_TABLE_SQL = """
