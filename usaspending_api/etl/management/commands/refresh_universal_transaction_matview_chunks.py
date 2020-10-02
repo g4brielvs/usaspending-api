@@ -145,27 +145,29 @@ REFRESH MATERIALIZED VIEW universal_transaction_test_matview_{current_chunk};
 """
 
 RECREATE_TABLE_SQL = """
-DROP TABLE IF EXISTS universal_transaction_test_table;
-CREATE TABLE universal_transaction_test_table AS TABLE universal_transaction_matview WITH NO DATA;
+DROP TABLE IF EXISTS universal_transaction_test;
+CREATE TABLE universal_transaction_test AS TABLE universal_transaction_matview WITH NO DATA;
 """
 
 INSERT_INTO_TABLE_SQL = """
-INSERT INTO universal_transaction_test_table SELECT * FROM universal_transaction_test_matview_{current_chunk}
+INSERT INTO universal_transaction_test SELECT * FROM universal_transaction_test_matview_{current_chunk}
 """
 
 TABLE_INDEX_SQL = """
-CREATE UNIQUE INDEX idx_15d6e514$75d_transaction_id_test_table ON universal_transaction_test_table USING BTREE(transaction_id ASC NULLS LAST) WITH (fillfactor = 97);
-CREATE INDEX idx_15d6e514$75d_action_date_test_table ON universal_transaction_test_table USING BTREE(action_date DESC NULLS LAST) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_last_modified_date_test_table ON universal_transaction_test_table USING BTREE(last_modified_date DESC NULLS LAST) WITH (fillfactor = 97);
-CREATE INDEX idx_15d6e514$75d_fiscal_year_test_table ON universal_transaction_test_table USING BTREE(fiscal_year DESC NULLS LAST) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_type_test_table ON universal_transaction_test_table USING BTREE(type) WITH (fillfactor = 97) WHERE type IS NOT NULL AND action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_award_id_test_table ON universal_transaction_test_table USING BTREE(award_id) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_pop_zip5_test_table ON universal_transaction_test_table USING BTREE(pop_zip5) WITH (fillfactor = 97) WHERE pop_zip5 IS NOT NULL AND action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_recipient_unique_id_test_table ON universal_transaction_test_table USING BTREE(recipient_unique_id) WITH (fillfactor = 97) WHERE recipient_unique_id IS NOT NULL AND action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_parent_recipient_unique_id_test_table ON universal_transaction_test_table USING BTREE(parent_recipient_unique_id) WITH (fillfactor = 97) WHERE parent_recipient_unique_id IS NOT NULL AND action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_simple_pop_geolocation_test_table ON universal_transaction_test_table USING BTREE(pop_state_code, action_date) WITH (fillfactor = 97) WHERE pop_country_code = 'USA' AND pop_state_code IS NOT NULL AND action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_recipient_hash_test_table ON universal_transaction_test_table USING BTREE(recipient_hash) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
-CREATE INDEX idx_15d6e514$75d_action_date_pre2008_test_table ON universal_transaction_test_table USING BTREE(action_date) WITH (fillfactor = 97) WHERE action_date < '2007-10-01';
+
+CREATE UNIQUE INDEX idx_ut_transaction_id_test ON universal_transaction_test_table USING BTREE(transaction_id ASC NULLS LAST) WITH (fillfactor = 97);
+CREATE INDEX idx_ut_action_date_test ON universal_transaction_test_table USING BTREE(action_date DESC NULLS LAST) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
+CREATE INDEX idx_ut_last_modified_date_test ON universal_transaction_test_table USING BTREE(last_modified_date DESC NULLS LAST) WITH (fillfactor = 97);
+CREATE INDEX idx_ut_fiscal_year_test ON universal_transaction_test_table USING BTREE(fiscal_year DESC NULLS LAST) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
+CREATE INDEX idx_ut_type_test ON universal_transaction_test_table USING BTREE(type) WITH (fillfactor = 97) WHERE type IS NOT NULL AND action_date >= '2007-10-01';
+CREATE INDEX idx_ut_award_id_test ON universal_transaction_test_table USING BTREE(award_id) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
+CREATE INDEX idx_ut_pop_zip5_test ON universal_transaction_test_table USING BTREE(pop_zip5) WITH (fillfactor = 97) WHERE pop_zip5 IS NOT NULL AND action_date >= '2007-10-01';
+CREATE INDEX idx_ut_recipient_unique_id_test ON universal_transaction_test_table USING BTREE(recipient_unique_id) WITH (fillfactor = 97) WHERE recipient_unique_id IS NOT NULL AND action_date >= '2007-10-01';
+CREATE INDEX idx_ut_parent_recipient_unique_id_test ON universal_transaction_test_table USING BTREE(parent_recipient_unique_id) WITH (fillfactor = 97) WHERE parent_recipient_unique_id IS NOT NULL AND action_date >= '2007-10-01';
+CREATE INDEX idx_ut_simple_pop_geolocation_test ON universal_transaction_test_table USING BTREE(pop_state_code, action_date) WITH (fillfactor = 97) WHERE pop_country_code = 'USA' AND pop_state_code IS NOT NULL AND action_date >= '2007-10-01';
+CREATE INDEX idx_ut_recipient_hash_test ON universal_transaction_test_table USING BTREE(recipient_hash) WITH (fillfactor = 97) WHERE action_date >= '2007-10-01';
+CREATE INDEX idx_ut_action_date_pre2008_test ON universal_transaction_test_table USING BTREE(action_date) WITH (fillfactor = 97) WHERE action_date < '2007-10-01';
+
 """
 
 
