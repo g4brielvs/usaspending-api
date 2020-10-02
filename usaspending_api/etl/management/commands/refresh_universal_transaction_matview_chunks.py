@@ -10,9 +10,9 @@ from usaspending_api.common.helpers.timing_helpers import ConsoleTimer as Timer
 logger = logging.getLogger("script")
 
 CREATE_MATVIEW_SQL = """
-DROP MATERIALIZED VIEW IF EXISTS universal_transaction_test_matview_{current_chunk} CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS universal_transaction_matview_{current_chunk} CASCADE;
 
-CREATE MATERIALIZED VIEW universal_transaction_test_matview_{current_chunk} AS
+CREATE MATERIALIZED VIEW universal_transaction_matview_{current_chunk} AS
         SELECT
             tas.treasury_account_identifiers, transaction_normalized.id AS transaction_id, transaction_normalized.action_date::date, DATE(
                 transaction_normalized.action_date::date + INTERVAL '3 months'
