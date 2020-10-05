@@ -14,7 +14,8 @@ WHERE "update_date" >= '{update_date}'
 EXTRACT_SQL = """
     SELECT *
     FROM "{view}"
-    WHERE "update_date" >= '{update_date}' AND mod("{id_col}", {divisor}) = {remainder}
+    WHERE "update_date" >= '{update_date}' AND "{id_col}" IN
+    (SELECT id from transaction_normalized WHERE mod("id", {divisor}) = {remainder})
 """
 
 

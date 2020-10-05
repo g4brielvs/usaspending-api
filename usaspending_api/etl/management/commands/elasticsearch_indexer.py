@@ -90,7 +90,9 @@ class Command(BaseCommand):
         start_msg = "target index: {index_name} | Starting from: {starting_date}"
         logger.info(format_log(start_msg.format(**config)))
 
-        ensure_view_exists(config["sql_view"])
+        # ensure_view_exists(config["sql_view"])
+        config["sql_view"] = "temp_dev_5856_transactions"
+
         error_addition = ""
         loader = Controller(config, elasticsearch_client)
 
